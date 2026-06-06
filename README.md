@@ -71,7 +71,7 @@
 
 ## 🏆 SUBMISSION
 
-Built for the **DEV.to June Solstice Game Jam 2026** in the *Best Ode to Alan Turing* category. **[VIEW SUBMISSION](https://dev.to/placeholder)**
+Built for the **DEV.to June Solstice Game Jam 2026** in the *Best Ode to Alan Turing* category. **[VIEW SUBMISSION](https://dev.to/om_shree_0709/i-built-a-browser-puzzle-game-about-alan-turing-and-it-taught-me-why-he-was-unstoppable-5ho0)**
 
 ---
 
