@@ -8,9 +8,7 @@
 
 ## ▶️ PLAY THE GAME
 
-**[PLAY NOW](https://USERNAME.github.io/REPO-NAME/)**
-
-*Note: Replace USERNAME and REPO-NAME after deploying to GitHub Pages.*
+**[PLAY NOW](https://Om-Shree-0709.github.io/imitation-game/)**
 
 ---
 
@@ -67,7 +65,7 @@
 1. Fork this repository
 2. Go to **Settings > Pages**
 3. Set source to **main** branch, **/ (root)** folder
-4. Visit `https://USERNAME.github.io/REPO-NAME/`
+4. Visit `https://Om-Shree-0709.github.io/imitation-game/`
 
 ---
 
