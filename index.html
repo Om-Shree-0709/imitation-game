@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Imitation Game — An Ode to Alan Turing</title>
+  <meta name="description" content="An interactive browser puzzle game celebrating Alan Turing — crack ciphers, configure Enigma rotors, and calibrate the Bombe across 5 historically accurate levels.">
+  <!-- Google Fonts for retro typewriter and terminal styling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="crt-screen">
+    <div class="how-to-play-overlay" id="how-to-play-overlay">
+      <div class="how-to-play-modal">
+        <div class="htp-stamp">TOP SECRET</div>
+        <h2 class="htp-title">MISSION BRIEFING</h2>
+        <div class="htp-divider"></div>
+        <div class="htp-body">
+          <p>You are about to assist <strong>Alan Turing</strong> at Bletchley Park, 1941.</p>
+          <p>Five levels. Five real techniques used to break Enigma during World War II.</p>
+          <div class="htp-levels">
+            <div class="htp-level-item">
+              <span class="htp-level-num">01</span>
+              <span><strong>Caesar Cipher</strong> — Rotate the shift wheel to decode the intercepted message.</span>
+            </div>
+            <div class="htp-level-item">
+              <span class="htp-level-num">02</span>
+              <span><strong>Substitution Cipher</strong> — Use frequency analysis to map cipher letters to plaintext.</span>
+            </div>
+            <div class="htp-level-item">
+              <span class="htp-level-num">03</span>
+              <span><strong>Enigma Rotors</strong> — Select the correct rotor combination from four options.</span>
+            </div>
+            <div class="htp-level-item">
+              <span class="htp-level-num">04</span>
+              <span><strong>Crib Dragging</strong> — Slide the known word across the ciphertext to find the clash-free position.</span>
+            </div>
+            <div class="htp-level-item">
+              <span class="htp-level-num">05</span>
+              <span><strong>The Bombe</strong> — Spin the dials to satisfy all six circuit constraints.</span>
+            </div>
+          </div>
+          <p class="htp-footer">Use the <strong>HINT</strong> button if you're stuck. Use <strong>REVEAL</strong> to see the answer.</p>
+        </div>
+        <button class="htp-start-btn" onclick="startGame()">BEGIN MISSION</button>
+      </div>
+    </div>
+    
+    <header>
+      <div class="header-logo">The Imitation Game</div>
+      <div class="progress-container">
+        <div class="progress-text" id="progress-step-text">LEVEL 1 OF 5</div>
+        <div class="progress-bar" id="progress-bar">
+          <div class="progress-pip active"></div>
+          <div class="progress-pip"></div>
+          <div class="progress-pip"></div>
+          <div class="progress-pip"></div>
+          <div class="progress-pip"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="game-container">
+      
+      <!-- Left column: Dossier Panel -->
+      <section class="dossier-panel" id="dossier-panel">
+        <div class="classified-stamp">CLASSIFIED</div>
+        <div class="dossier-header">
+          <div class="dossier-meta">
+            <div><strong>SUBJECT:</strong> Turing, Alan M.</div>
+            <div><strong>STATION:</strong> Bletchley Park, Dept 10</div>
+            <div><strong>DOCUMENT:</strong> Cypher Tutorial Dossier</div>
+            <div><strong>SECURITY:</strong> TOP SECRET / EYES ONLY</div>
+          </div>
+        </div>
+
+        <div class="dossier-portrait">
+          <div class="dossier-portrait-inner">
+            <div class="portrait-badge">TURING, A.</div>
+            <div style="font-size: 0.7rem; color: rgba(44,36,26,0.5); text-align: right;">Ref: BP-1941</div>
+          </div>
+        </div>
+
+        <!-- Dynamic narrative text -->
+        <div class="narrative-text" id="narrative-text"></div>
+      </section>
+
+      <!-- Right column: Workspace -->
+      <section class="workspace-panel shake-target" id="workspace-panel">
+        <div class="flash-overlay" id="flash-overlay"></div>
+        
+        <div class="workspace-header">
+          <div class="terminal-title">
+            <div class="terminal-dot" id="terminal-dot"></div>
+            <span>DECRYPT_SYS_V4.1 // DECODING WORKSPACE</span>
+          </div>
+          <div class="terminal-status" id="terminal-status">STATUS: STANDBY</div>
+        </div>
+
+        <div class="hint-toolbar">
+          <button class="btn-hint" id="hint-btn" onclick="showHint()">💡 HINT</button>
+          <button class="btn-reveal" id="reveal-btn" onclick="revealAnswer()">🔍 REVEAL ANSWER</button>
+        </div>
+
+        <div class="hint-box" id="hint-box" style="display:none">
+          <span id="hint-text"></span>
+          <button class="hint-close" onclick="closeHint()">✕</button>
+        </div>
+
+        <div class="workspace-content">
+          
+          <!-- ============================================== -->
+          <!-- LEVEL 1 WORKSPACE -->
+          <!-- ============================================== -->
+          <div class="level-container active" id="level-1">
+            <div class="cipher-box">
+              <div class="cipher-label">Ciphertext Message (Intercepted)</div>
+              <div class="cipher-text" id="l1-ciphertext">EOHWFKOHB SDUN</div>
+            </div>
+            
+            <!-- Tape container div holding two rows wrapped in outer box -->
+            <div class="l1-tape-container" id="l1-tape-container">
+              <div class="l1-tape-indicator"></div>
+              
+              <div class="l1-tape-row-group">
+                <div class="l1-tape-label">CIPHER</div>
+                <div class="l1-tape-row" id="l1-tape-top"></div>
+              </div>
+              <div class="l1-tape-row-group">
+                <div class="l1-tape-label">PLAIN</div>
+                <div class="l1-tape-row" id="l1-tape-bottom"></div>
+              </div>
+            </div>
+
+            <!-- Shift control row -->
+            <div class="l1-shift-controls">
+              <button class="btn" onclick="adjustShift(-1)">-</button>
+              <div class="l1-shift-display" id="shift-display">SHIFT: 0</div>
+              <button class="btn" onclick="adjustShift(1)">+</button>
+            </div>
+
+            <!-- Live decode preview box -->
+            <div class="l1-live-decode-container" style="width: 100%;">
+              <div class="cipher-label">DECODED PREVIEW</div>
+              <div class="l1-live-decode" id="l1-live-decode">EOHWFKOHB SDUN</div>
+            </div>
+
+            <div class="action-row">
+              <button class="btn btn-green" onclick="checkLevel1()">Decode</button>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- LEVEL 2 WORKSPACE -->
+          <!-- ============================================== -->
+          <div class="level-container" id="level-2">
+            <div class="cipher-box">
+              <div class="cipher-label">Ciphertext (Frequency Map Activated)</div>
+              <!-- Text occurrences highlightable -->
+              <div class="cipher-text" id="l2-ciphertext"></div>
+            </div>
+
+            <div class="sub-workspace">
+              <!-- Key table -->
+              <div class="sub-table" id="l2-sub-table"></div>
+              
+              <div class="freq-legend">
+                <span>Letter frequencies in ciphertext:</span>
+                <div id="freq-legend-list" style="margin-top: 0.4rem;"></div>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="btn btn-green" onclick="checkLevel2()">Decode</button>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- LEVEL 3 WORKSPACE -->
+          <!-- ============================================== -->
+          <div class="level-container" id="level-3">
+            <div class="cipher-box">
+              <div class="cipher-label">Ciphertext Message</div>
+              <div class="cipher-text" id="l3-ciphertext">FLR ZPV FZO VXN PXN</div>
+            </div>
+
+            <div class="rotor-workspace">
+              <!-- Visual Rotors -->
+              <div class="rotors-panel">
+                <div class="rotor-viewfinder"></div>
+                
+                <div class="rotor-unit">
+                  <div class="rotor-label">R1</div>
+                  <div class="rotor-drum">
+                    <div class="rotor-strip" id="rotor-strip-1"></div>
+                  </div>
+                </div>
+
+                <div class="rotor-unit">
+                  <div class="rotor-label">R2</div>
+                  <div class="rotor-drum">
+                    <div class="rotor-strip" id="rotor-strip-2"></div>
+                  </div>
+                </div>
+
+                <div class="rotor-unit">
+                  <div class="rotor-label">R3</div>
+                  <div class="rotor-drum">
+                    <div class="rotor-strip" id="rotor-strip-3"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inter-rotor wiring signal lines -->
+              <div class="rotor-animation-box">
+                <svg class="rotor-signal-svg" id="rotor-signal-svg" viewBox="0 0 500 90">
+                  <!-- Wiring paths will be created dynamically -->
+                </svg>
+              </div>
+
+              <div class="choices-grid">
+                <div class="choice-card" onclick="selectRotorCombo(0)" id="combo-0">A-B-C</div>
+                <div class="choice-card" onclick="selectRotorCombo(1)" id="combo-1">T-U-R</div>
+                <div class="choice-card" onclick="selectRotorCombo(2)" id="combo-2">M-C-K</div>
+                <div class="choice-card" onclick="selectRotorCombo(3)" id="combo-3">W-E-T</div>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="btn btn-green" onclick="checkLevel3()">Decode</button>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- LEVEL 4 WORKSPACE -->
+          <!-- ============================================== -->
+          <div class="level-container" id="level-4">
+            <div class="cipher-box">
+              <div class="cipher-label">Enigma Crypt Message (Align the Crib below)</div>
+              <!-- Ciphertext blocks -->
+              <div class="char-strip-row" id="l4-ciphertext-strip"></div>
+            </div>
+
+            <div class="crib-workspace">
+              <!-- Drag track -->
+              <div class="drag-track" id="l4-drag-track">
+                <div class="crib-draggable-container" id="l4-crib-container">
+                  <div class="crib-slider" id="l4-crib-slider">
+                    <div class="crib-char-block">W</div>
+                    <div class="crib-char-block">E</div>
+                    <div class="crib-char-block">T</div>
+                    <div class="crib-char-block">T</div>
+                    <div class="crib-char-block">E</div>
+                    <div class="crib-char-block">R</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="crib-info">
+                <span>Alignment Position: <strong id="crib-position-txt">0</strong> / 10</span>
+                <span class="crib-status-tag" id="crib-status-txt">CHECKING ALIGNMENT...</span>
+              </div>
+
+              <!-- Accessible buttons for mobile/precise dragging -->
+              <div class="crib-controls-fallback">
+                <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="moveCrib(-1)">&larr; SLIDE LEFT</button>
+                <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="moveCrib(1)">SLIDE RIGHT &rarr;</button>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="btn btn-green" onclick="checkLevel4()">Decode</button>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- LEVEL 5 WORKSPACE -->
+          <!-- ============================================== -->
+          <div class="level-container" id="level-5">
+            <div class="cipher-box">
+              <div class="cipher-label">Partial Decoded Output (Calibrate the Bombe)</div>
+              <div class="cipher-text" id="l5-message-display">THE FATHER OF CS: _ _ _ _ _ _</div>
+            </div>
+
+            <div class="bombe-workspace">
+              <div class="bombe-board">
+                <!-- Mechanical dial settings -->
+                <div class="bombe-dials">
+                  <div class="bombe-dial-col">
+                    <div class="dial-slot-label">D1</div>
+                    <div class="dial-rotor">
+                      <div class="dial-arrow" onclick="spinBombeDial(0, 1)">&blacktriangle;</div>
+                      <div class="dial-letter" id="bombe-dial-0">A</div>
+                      <div class="dial-arrow" onclick="spinBombeDial(0, -1)">&blacktriangledown;</div>
+                    </div>
+                  </div>
+                  <div class="bombe-dial-col">
+                    <div class="dial-slot-label">D2</div>
+                    <div class="dial-rotor">
+                      <div class="dial-arrow" onclick="spinBombeDial(1, 1)">&blacktriangle;</div>
+                      <div class="dial-letter" id="bombe-dial-1">A</div>
+                      <div class="dial-arrow" onclick="spinBombeDial(1, -1)">&blacktriangledown;</div>
+                    </div>
+                  </div>
+                  <div class="bombe-dial-col">
+                    <div class="dial-slot-label">D3</div>
+                    <div class="dial-rotor">
+                      <div class="dial-arrow" onclick="spinBombeDial(2, 1)">&blacktriangle;</div>
+                      <div class="dial-letter" id="bombe-dial-2">A</div>
+                      <div class="dial-arrow" onclick="spinBombeDial(2, -1)">&blacktriangledown;</div>
+                    </div>
+                  </div>
+                  <div class="bombe-dial-col">
+                    <div class="dial-slot-label">D4</div>
+                    <div class="dial-rotor">
+                      <div class="dial-arrow" onclick="spinBombeDial(3, 1)">&blacktriangle;</div>
+                      <div class="dial-letter" id="bombe-dial-3">A</div>
+                      <div class="dial-arrow" onclick="spinBombeDial(3, -1)">&blacktriangledown;</div>
+                    </div>
+                  </div>
+                  <div class="bombe-dial-col">
+                    <div class="dial-slot-label">D5</div>
+                    <div class="dial-rotor">
+                      <div class="dial-arrow" onclick="spinBombeDial(4, 1)">&blacktriangle;</div>
+                      <div class="dial-letter" id="bombe-dial-4">A</div>
+                      <div class="dial-arrow" onclick="spinBombeDial(4, -1)">&blacktriangledown;</div>
+                    </div>
+                  </div>
+                  <div class="bombe-dial-col">
+                    <div class="dial-slot-label">D6</div>
+                    <div class="dial-rotor">
+                      <div class="dial-arrow" onclick="spinBombeDial(5, 1)">&blacktriangle;</div>
+                      <div class="dial-letter" id="bombe-dial-5">A</div>
+                      <div class="dial-arrow" onclick="spinBombeDial(5, -1)">&blacktriangledown;</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bombe Circuit Telemetry -->
+                <div class="bombe-telemetry">
+                  <div class="telemetry-title">Bombe Diagnostic Status</div>
+                  
+                  <div class="constraint-item" id="const-0">
+                    <div class="constraint-led"></div>
+                    <div class="constraint-text">Circuit Alpha: Drums 2 & 4 energize diodes U and I respectively.</div>
+                  </div>
+                  <div class="constraint-item" id="const-1">
+                    <div class="constraint-led"></div>
+                    <div class="constraint-text">Circuit Beta: Drum 1 sends impulse to Drum 2 minus 1 unit.</div>
+                  </div>
+                  <div class="constraint-item" id="const-2">
+                    <div class="constraint-led"></div>
+                    <div class="constraint-text">Circuit Gamma: Diagnostic pathway: Q &lt; Drum 3 &lt; S.</div>
+                  </div>
+                  <div class="constraint-item" id="const-3">
+                    <div class="constraint-led"></div>
+                    <div class="constraint-text">Circuit Delta: Indicator lamp 5 glows for contact N.</div>
+                  </div>
+                  <div class="constraint-item" id="const-4">
+                    <div class="constraint-led"></div>
+                    <div class="constraint-text">Circuit Epsilon: Drum 6 voltage stabilized at position G.</div>
+                  </div>
+                  <div class="constraint-item" id="const-5">
+                    <div class="constraint-led"></div>
+                    <div class="constraint-text">Circuit Zeta: Feedback loop: No rotor setting duplicated in pathway.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="btn btn-green" onclick="checkLevel5()">Decode</button>
+            </div>
+          </div>
+
+          <!-- Global Continue Row -->
+          <div class="action-row" id="continue-row">
+            <button class="btn btn-green" id="continue-btn" onclick="nextLevel()">Continue &rarr;</button>
+          </div>
+
+        </div>
+      </section>
+      
+    </main>
+
+    <!-- Cutscene Modal -->
+    <div class="cutscene-overlay" id="cutscene-overlay">
+      <div class="cutscene-folder">
+        <div class="cutscene-stamp">DECLASSIFIED</div>
+        <div class="cutscene-text" id="cutscene-text-content"></div>
+        <div class="cutscene-actions">
+          <button class="cutscene-btn" id="cutscene-btn-primary" onclick="handleCutsceneNext()">Proceed</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
